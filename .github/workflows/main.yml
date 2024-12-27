@@ -1,0 +1,33 @@
+name: Web Scraping with Browserless
+
+on:
+  schedule:
+    - cron: '1 * * * *'  # Ejecutar cada hora al minuto 1
+  workflow_dispatch:  # Permite ejecutar manualmente
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    container:
+      image: browserless/chrome:latest  # Usa la imagen de browserless
+      options: --shm-size=2gb  # Aumenta la memoria compartida
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas beautifulsoup4 schedule supabase-py numpy
+
+      - name: Run scraping script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+        run: python perpetuos.py
